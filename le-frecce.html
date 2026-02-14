@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Frecce 🔄</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function LeFrecce() {
+            const [isAnimating, setIsAnimating] = useState(false);
+            const [showResult, setShowResult] = useState(false);
+            const [finalResult1, setFinalResult1] = useState(0);
+            const [finalResult2, setFinalResult2] = useState(0);
+            const [animationKey, setAnimationKey] = useState(0);
+
+            const dado1 = [
+                { colore: 'bg-white text-black border-2 border-gray-300', emoji: '😶', testo: 'assenza' },
+                { colore: 'bg-yellow-400 text-black', emoji: '🤪', testo: 'follia' },
+                { colore: 'bg-red-600 text-white', emoji: '🤬', testo: 'rabbia' },
+                { colore: 'bg-green-500 text-white', emoji: '🤮', testo: 'disgusto' },
+                { colore: 'bg-purple-600 text-white', emoji: '😍', testo: 'passionalità' },
+                { colore: 'bg-black text-white', emoji: '😣', testo: 'cupezza' },
+                { colore: 'bg-blue-500 text-white', emoji: '😭', testo: 'tristezza' }
+            ];
+
+            const dado2 = [
+                { emoji: '👥👥', testo: 'Platea' },
+                { emoji: '👤', testo: 'Uno del Pubblico' },
+                { emoji: '🏞', testo: 'Spazio attorno' },
+                { emoji: '🗣', testo: 'Un\'altro in scena' },
+                { emoji: '🧠', testo: 'A sè Stessi' },
+                { emoji: '😑', testo: 'Assenza' }
+            ];
+
+            const dado1Loop = Array(8).fill(dado1).flat();
+            const dado2Loop = Array(8).fill(dado2).flat();
+
+            const lanciaDadi = () => {
+                setIsAnimating(true);
+                setShowResult(false);
+                
+                const result1 = Math.floor(Math.random() * 7);
+                const result2 = Math.floor(Math.random() * 6);
+                
+                setFinalResult1(result1);
+                setFinalResult2(result2);
+                
+                setAnimationKey(prev => prev + 1);
+                
+                setTimeout(() => {
+                    setIsAnimating(false);
+                    setShowResult(true);
+                }, 10000);
+                
+                setTimeout(() => {
+                    setShowResult(false);
+                }, 15000);
+            };
+
+            return (
+                <div className="min-h-screen bg-gray-800 flex flex-col items-center justify-center p-6">
+                    <style>{`
+                        @keyframes slide1 {
+                            0% { transform: translateY(0); }
+                            100% { transform: translateY(-${(7 * 5 + finalResult1) * 192}px); }
+                        }
+                        @keyframes slide2 {
+                            0% { transform: translateY(0); }
+                            100% { transform: translateY(-${(6 * 5 + finalResult2) * 192}px); }
+                        }
+                        .animate-slide1 {
+                            animation: slide1 8s cubic-bezier(0.33, 1, 0.68, 1);
+                            animation-fill-mode: forwards;
+                        }
+                        .animate-slide2 {
+                            animation: slide2 10s cubic-bezier(0.33, 1, 0.68, 1);
+                            animation-fill-mode: forwards;
+                        }
+                        .freeze-slide1 {
+                            transform: translateY(-${(7 * 5 + finalResult1) * 192}px);
+                        }
+                        .freeze-slide2 {
+                            transform: translateY(-${(6 * 5 + finalResult2) * 192}px);
+                        }
+                    `}</style>
+
+                    <h1 className="text-4xl font-bold mb-8 text-white">Le Frecce 🔄</h1>
+                    
+                    <div className="flex gap-8 mb-8 flex-wrap justify-center">
+                        <div className="flex flex-col items-center">
+                            <h2 className="text-lg font-semibold mb-3 text-gray-200">Emozione</h2>
+                            <div className="w-48 h-48 rounded-lg overflow-hidden relative">
+                                <div 
+                                    key={`dado1-${animationKey}`}
+                                    className={isAnimating ? 'animate-slide1' : showResult ? 'freeze-slide1' : ''}
+                                >
+                                    {dado1Loop.map((faccia, index) => (
+                                        <div
+                                            key={index}
+                                            className={`w-48 h-48 flex flex-col items-center justify-center text-center ${faccia.colore}`}
+                                        >
+                                            <div className="text-7xl mb-2">{faccia.emoji}</div>
+                                            <div className="text-lg font-bold">{faccia.testo}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col items-center">
+                            <h2 className="text-lg font-semibold mb-3 text-gray-200">Direzione</h2>
+                            <div className="w-48 h-48 rounded-lg overflow-hidden relative">
+                                <div 
+                                    key={`dado2-${animationKey}`}
+                                    className={isAnimating ? 'animate-slide2' : showResult ? 'freeze-slide2' : ''}
+                                >
+                                    {dado2Loop.map((faccia, index) => (
+                                        <div
+                                            key={index}
+                                            className="w-48 h-48 flex flex-col items-center justify-center text-center bg-white border-4 border-gray-400 text-gray-800"
+                                        >
+                                            <div className="text-7xl mb-2">{faccia.emoji}</div>
+                                            <div className="text-lg font-bold">{faccia.testo}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button 
+                        onClick={lanciaDadi}
+                        disabled={isAnimating || showResult}
+                        className="px-8 py-4 bg-blue-600 text-white text-xl font-bold rounded-lg hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        🎲 Lancia i Dadi
+                    </button>
+
+                    {showResult && (
+                        <div className="mt-8 text-center text-gray-400 text-sm">
+                            <p>Attendi 5 secondi prima del prossimo lancio...</p>
+                        </div>
+                    )}
+                    
+                    {!isAnimating && !showResult && animationKey > 0 && (
+                        <div className="mt-8 text-center text-gray-400 text-sm">
+                            <p>Clicca di nuovo per lanciare ancora</p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<LeFrecce />, document.getElementById('root'));
+    </script>
+</body>
+</html>
