@@ -44,6 +44,25 @@
             const dado1Loop = Array(8).fill(dado1).flat();
             const dado2Loop = Array(8).fill(dado2).flat();
 
+            // Funzione per creare il suono tick
+            const playTick = () => {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'square';
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.05);
+            };
+
             const lanciaDadi = () => {
                 setIsAnimating(true);
                 setShowResult(false);
@@ -56,9 +75,33 @@
                 
                 setAnimationKey(prev => prev + 1);
                 
+                // Suoni durante l'animazione
+                let tickInterval = 50; // Inizia veloce
+                let tickCount = 0;
+                const maxTicks = 150; // Numero di tick totali
+                
+                const tickTimer = setInterval(() => {
+                    playTick();
+                    tickCount++;
+                    
+                    // Rallenta gradualmente il suono
+                    if (tickCount > 100) {
+                        tickInterval = 200;
+                    } else if (tickCount > 80) {
+                        tickInterval = 150;
+                    } else if (tickCount > 60) {
+                        tickInterval = 100;
+                    }
+                    
+                    if (tickCount >= maxTicks) {
+                        clearInterval(tickTimer);
+                    }
+                }, tickInterval);
+                
                 setTimeout(() => {
                     setIsAnimating(false);
                     setShowResult(true);
+                    clearInterval(tickTimer);
                 }, 10000);
                 
                 setTimeout(() => {
@@ -69,6 +112,9 @@
             return (
                 <div className="min-h-screen bg-gray-800 flex flex-col items-center justify-center p-6">
                     <style>{`
+                        * {
+                            box-sizing: border-box;
+                        }
                         @keyframes slide1 {
                             0% { transform: translateY(0); }
                             100% { transform: translateY(-${(7 * 5 + finalResult1) * 192}px); }
@@ -78,11 +124,11 @@
                             100% { transform: translateY(-${(6 * 5 + finalResult2) * 192}px); }
                         }
                         .animate-slide1 {
-                            animation: slide1 8s cubic-bezier(0.33, 1, 0.68, 1);
+                            animation: slide1 8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
                             animation-fill-mode: forwards;
                         }
                         .animate-slide2 {
-                            animation: slide2 10s cubic-bezier(0.33, 1, 0.68, 1);
+                            animation: slide2 10s cubic-bezier(0.25, 0.46, 0.45, 0.94);
                             animation-fill-mode: forwards;
                         }
                         .freeze-slide1 {
@@ -90,6 +136,11 @@
                         }
                         .freeze-slide2 {
                             transform: translateY(-${(6 * 5 + finalResult2) * 192}px);
+                        }
+                        .dado-faccia {
+                            height: 192px !important;
+                            min-height: 192px !important;
+                            max-height: 192px !important;
                         }
                     `}</style>
 
@@ -106,7 +157,7 @@
                                     {dado1Loop.map((faccia, index) => (
                                         <div
                                             key={index}
-                                            className={`w-48 h-48 flex flex-col items-center justify-center text-center ${faccia.colore}`}
+                                            className={`dado-faccia w-48 h-48 flex flex-col items-center justify-center text-center ${faccia.colore}`}
                                         >
                                             <div className="text-7xl mb-2">{faccia.emoji}</div>
                                             <div className="text-lg font-bold">{faccia.testo}</div>
@@ -126,7 +177,7 @@
                                     {dado2Loop.map((faccia, index) => (
                                         <div
                                             key={index}
-                                            className="w-48 h-48 flex flex-col items-center justify-center text-center bg-white border-4 border-gray-400 text-gray-800"
+                                            className="dado-faccia w-48 h-48 flex flex-col items-center justify-center text-center bg-white border-4 border-gray-400 text-gray-800"
                                         >
                                             <div className="text-7xl mb-2">{faccia.emoji}</div>
                                             <div className="text-lg font-bold">{faccia.testo}</div>
