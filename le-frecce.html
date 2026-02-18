@@ -21,6 +21,7 @@
             const [finalResult1, setFinalResult1] = useState(0);
             const [finalResult2, setFinalResult2] = useState(0);
             const [animationKey, setAnimationKey] = useState(0);
+            const [fastMode, setFastMode] = useState(false);
 
             const dado1 = [
                 { colore: 'bg-white text-black border-2 border-gray-300', emoji: '😶', testo: 'assenza' },
@@ -75,38 +76,57 @@
                 
                 setAnimationKey(prev => prev + 1);
                 
-                // Suoni durante l'animazione
-                let tickInterval = 50; // Inizia veloce
-                let tickCount = 0;
-                const maxTicks = 150; // Numero di tick totali
+                // Durate in base alla modalità
+                const duration1 = fastMode ? 1000 : 8000;
+                const duration2 = fastMode ? 1000 : 10000;
+                const pauseDuration = fastMode ? 2000 : 5000;
                 
-                const tickTimer = setInterval(() => {
-                    playTick();
-                    tickCount++;
+                // Suoni durante l'animazione
+                if (!fastMode) {
+                    let tickInterval = 50;
+                    let tickCount = 0;
+                    const maxTicks = 150;
                     
-                    // Rallenta gradualmente il suono
-                    if (tickCount > 100) {
-                        tickInterval = 200;
-                    } else if (tickCount > 80) {
-                        tickInterval = 150;
-                    } else if (tickCount > 60) {
-                        tickInterval = 100;
-                    }
+                    const tickTimer = setInterval(() => {
+                        playTick();
+                        tickCount++;
+                        
+                        if (tickCount > 100) {
+                            tickInterval = 200;
+                        } else if (tickCount > 80) {
+                            tickInterval = 150;
+                        } else if (tickCount > 60) {
+                            tickInterval = 100;
+                        }
+                        
+                        if (tickCount >= maxTicks) {
+                            clearInterval(tickTimer);
+                        }
+                    }, tickInterval);
                     
-                    if (tickCount >= maxTicks) {
+                    setTimeout(() => {
                         clearInterval(tickTimer);
-                    }
-                }, tickInterval);
+                    }, Math.max(duration1, duration2));
+                } else {
+                    // In modalità fast, pochi tick veloci
+                    let tickCount = 0;
+                    const fastTickTimer = setInterval(() => {
+                        playTick();
+                        tickCount++;
+                        if (tickCount >= 10) {
+                            clearInterval(fastTickTimer);
+                        }
+                    }, 80);
+                }
                 
                 setTimeout(() => {
                     setIsAnimating(false);
                     setShowResult(true);
-                    clearInterval(tickTimer);
-                }, 10000);
+                }, Math.max(duration1, duration2));
                 
                 setTimeout(() => {
                     setShowResult(false);
-                }, 15000);
+                }, Math.max(duration1, duration2) + pauseDuration);
             };
 
             return (
@@ -124,11 +144,11 @@
                             100% { transform: translateY(-${(6 * 5 + finalResult2) * 192}px); }
                         }
                         .animate-slide1 {
-                            animation: slide1 8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                            animation: slide1 ${fastMode ? '1s' : '8s'} cubic-bezier(0.25, 0.46, 0.45, 0.94);
                             animation-fill-mode: forwards;
                         }
                         .animate-slide2 {
-                            animation: slide2 10s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                            animation: slide2 ${fastMode ? '1s' : '10s'} cubic-bezier(0.25, 0.46, 0.45, 0.94);
                             animation-fill-mode: forwards;
                         }
                         .freeze-slide1 {
@@ -145,6 +165,29 @@
                     `}</style>
 
                     <h1 className="text-4xl font-bold mb-8 text-white">Le Frecce 🔄</h1>
+                    
+                    {/* Toggle Fast Mode */}
+                    <div className="mb-6 flex items-center justify-center gap-3">
+                        <span className={`text-sm font-semibold ${!fastMode ? 'text-blue-400' : 'text-gray-500'}`}>
+                            Normale
+                        </span>
+                        <button
+                            onClick={() => setFastMode(!fastMode)}
+                            disabled={isAnimating}
+                            className={`relative inline-flex h-8 w-16 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 ${
+                                fastMode ? 'bg-green-500' : 'bg-gray-600'
+                            } ${isAnimating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                            <span
+                                className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                                    fastMode ? 'translate-x-9' : 'translate-x-1'
+                                }`}
+                            />
+                        </button>
+                        <span className={`text-sm font-semibold ${fastMode ? 'text-green-400' : 'text-gray-500'}`}>
+                            ⚡ Fast
+                        </span>
+                    </div>
                     
                     <div className="flex gap-8 mb-8 flex-wrap justify-center">
                         <div className="flex flex-col items-center">
@@ -198,7 +241,7 @@
 
                     {showResult && (
                         <div className="mt-8 text-center text-gray-400 text-sm">
-                            <p>Attendi 5 secondi prima del prossimo lancio...</p>
+                            <p>Attendi {fastMode ? '2' : '5'} secondi prima del prossimo lancio...</p>
                         </div>
                     )}
                     
