@@ -79,7 +79,6 @@
                 // Durate in base alla modalità
                 const duration1 = fastMode ? 1000 : 8000;
                 const duration2 = fastMode ? 1000 : 10000;
-                const pauseDuration = fastMode ? 2000 : 5000;
                 
                 // Suoni durante l'animazione
                 if (!fastMode) {
@@ -123,10 +122,6 @@
                     setIsAnimating(false);
                     setShowResult(true);
                 }, Math.max(duration1, duration2));
-                
-                setTimeout(() => {
-                    setShowResult(false);
-                }, Math.max(duration1, duration2) + pauseDuration);
             };
 
             return (
@@ -233,19 +228,13 @@
 
                     <button 
                         onClick={lanciaDadi}
-                        disabled={isAnimating || showResult}
+                        disabled={isAnimating}
                         className="px-8 py-4 bg-blue-600 text-white text-xl font-bold rounded-lg hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         🎲 Lancia i Dadi
                     </button>
 
-                    {showResult && (
-                        <div className="mt-8 text-center text-gray-400 text-sm">
-                            <p>Attendi {fastMode ? '2' : '5'} secondi prima del prossimo lancio...</p>
-                        </div>
-                    )}
-                    
-                    {!isAnimating && !showResult && animationKey > 0 && (
+                    {!isAnimating && animationKey > 0 && (
                         <div className="mt-8 text-center text-gray-400 text-sm">
                             <p>Clicca di nuovo per lanciare ancora</p>
                         </div>
